@@ -1,113 +1,81 @@
+const URL = "https://khktch.github.io/phan-loai-rac/"; // model.json, metadata.json, weights.bin nằm cùng cấp
+let model, webcamStream;
+let currentFacingMode = "user"; // "user" là cam trước, "environment" là cam sau
 
-// script.js
-// --- chỉnh đường dẫn model nếu cần ---
-const modelURL = "https://khktch.github.io/phan-loai-rac/model.json";
-  const metadataURL = "https://khktch.github.io/phan-loai-rac/metadata.json";
+const video = document.getElementById("webcam");
+const statusText = document.getElementById("status");
+const labelContainer = document.getElementById("label-container");
+const trashBin = document.getElementById("trashBin");
 
-let model, webcam, labelContainer, maxPredictions;
-let lastLabel = null;
-let facingMode = "user"; // 'user' = trước, 'environment' = sau
-const THRESHOLD = 0.55;
-
-// Bắt đầu camera
 async function init() {
+  statusText.innerText = "⏳ Đang tải mô hình...";
   try {
-    document.getElementById("status").innerText = "Đang tải mô hình...";
-    model = model || await tmImage.load(modelURL, metadataURL);
-    maxPredictions = model.getTotalClasses();
-
-    document.getElementById("status").innerText = "Đang khởi động camera...";
-    await setupWebcam();
-
-    document.getElementById("status").innerText = "Camera hoạt động. Đang nhận diện...";
-    window.requestAnimationFrame(loop);
-
-    document.getElementById("switchBtn").disabled = false;
+    model = await tmImage.load(`${URL}model.json`, `${URL}metadata.json`);
+    statusText.innerText = "✅ Mô hình đã sẵn sàng!";
+    await setupCamera();
+    predictLoop();
   } catch (err) {
-    console.error("Lỗi:", err);
-    document.getElementById("status").innerText = "Không thể khởi tạo. Xem console.";
+    console.error(err);
+    statusText.innerText = "❌ Lỗi khi tải mô hình. Kiểm tra console!";
   }
 }
 
-// Thiết lập webcam
-async function setupWebcam() {
-  if (webcam) {
-    webcam.stop(); // dừng camera cũ nếu đang chạy
+async function setupCamera() {
+  if (webcamStream) {
+    webcamStream.getTracks().forEach(track => track.stop());
   }
 
-  webcam = new tmImage.Webcam(220, 220, false);
-  const constraints = {
-    video: {
-      facingMode: facingMode,
-      width: 220,
-      height: 220
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: currentFacingMode }
+    });
+    video.srcObject = webcamStream;
+    await video.play();
+    statusText.innerText = "📸 Camera đang hoạt động!";
+  } catch (err) {
+    console.error("Không thể bật camera:", err);
+    statusText.innerText = "⚠️ Không thể bật camera. Vui lòng cho phép truy cập.";
+  }
+}
+
+async function switchCamera() {
+  currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+  await setupCamera();
+}
+
+async function predictLoop() {
+  while (true) {
+    if (model && video.readyState === 4) {
+      const prediction = await model.predict(video);
+      displayPrediction(prediction);
     }
-  };
+    await new Promise(r => setTimeout(r, 200)); // dự đoán mỗi 0.2 giây
+  }
+}
 
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
-  webcam.webcam.srcObject = stream;
-  await webcam.play();
-
-  const container = document.getElementById("webcam-container");
-  container.innerHTML = "";
-  container.appendChild(webcam.canvas);
-
-  labelContainer = document.getElementById("label-container");
+function displayPrediction(prediction) {
   labelContainer.innerHTML = "";
-  for (let i = 0; i < maxPredictions; i++) {
+
+  let top = prediction[0];
+  for (let p of prediction) {
+    if (p.probability > top.probability) top = p;
+  }
+
+  prediction.forEach(p => {
+    const percent = Math.round(p.probability * 100);
     const div = document.createElement("div");
+    div.innerText = `${p.className}: ${percent}%`;
     labelContainer.appendChild(div);
+  });
+
+  // rung khi nhận đúng
+  if (top.probability > 0.8) {
+    trashBin.classList.add("shake");
+  } else {
+    trashBin.classList.remove("shake");
   }
 }
 
-// Dự đoán liên tục
-async function loop() {
-  webcam.update();
-  await predict();
-  window.requestAnimationFrame(loop);
-}
-
-async function predict() {
-  const prediction = await model.predict(webcam.canvas);
-  for (let i = 0; i < prediction.length; i++) {
-    const pct = Math.round(prediction[i].probability * 100) + "%";
-    labelContainer.childNodes[i].innerText = `${prediction[i].className}: ${pct}`;
-  }
-
-  let best = prediction.reduce((a, b) => a.probability > b.probability ? a : b);
-  if (best.probability < THRESHOLD) {
-    if (lastLabel !== null) {
-      turnOffAllBins();
-      lastLabel = null;
-    }
-    return;
-  }
-
-  const bestLabel = best.className.toLowerCase();
-  if (bestLabel !== lastLabel) {
-    turnOffAllBins();
-    if (bestLabel.includes("nhựa") || bestLabel.includes("plastic"))
-      document.getElementById("plasticBin").classList.add("open");
-    else if (bestLabel.includes("kim") || bestLabel.includes("metal"))
-      document.getElementById("metalBin").classList.add("open");
-    else if (bestLabel.includes("giấy") || bestLabel.includes("paper"))
-      document.getElementById("paperBin").classList.add("open");
-    lastLabel = bestLabel;
-  }
-}
-
-function turnOffAllBins() {
-  document.querySelectorAll(".bin img").forEach(img => img.classList.remove("open"));
-}
-
-// Gắn sự kiện
-document.getElementById("startBtn").addEventListener("click", init);
-document.getElementById("switchBtn").addEventListener("click", async () => {
-  facingMode = (facingMode === "user") ? "environment" : "user";
-  document.getElementById("status").innerText = 
-    (facingMode === "user") ? "Chuyển sang camera trước..." : "Chuyển sang camera sau...";
-  await setupWebcam();
-});
 
 
 
