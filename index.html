@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Phân loại rác thông minh</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+  <style>
+    .bins { display: flex; justify-content: space-around; margin-top: 20px; }
+    .bin { width: 150px; text-align: center; }
+    .bin img { width: 100px; transition: 0.5s; }
+    .open { transform: rotateX(60deg); } /* hiệu ứng mở nắp */
+  </style>
+</head>
+<body>
+  <h2>Demo phân loại rác bằng AI</h2>
+  <button onclick="init()">Bật Camera</button>
+  <div id="webcam-container"><video id="webcam" autoplay playsinline width="200" height="200"></video></div>
+
+  <div class="bins">
+    <div class="bin"><img id="plasticBin" src="plastic.png"><p>Nhựa</p></div>
+    <div class="bin"><img id="metalBin" src="metal.png"><p>Kim loại</p></div>
+    <div class="bin"><img id="paperBin" src="paper.png"><p>Giấy</p></div>
+  </div>
+
+  <div id="label-container"></div>
+
+  <!-- Gọi đến file script riêng -->
+  <script src="script.js"></script>
+</body>
+</html>
