@@ -30,11 +30,6 @@ async function predict() {
     labelContainer.childNodes[i].innerHTML =
       prediction[i].className + ": " + prediction[i].probability.toFixed(2);
   }
-}
-
-async function predict() {
-  const prediction = await model.predict(webcam.canvas);
-
   // reset trạng thái
   document.getElementById("plasticBin").classList.remove("open");
   document.getElementById("metalBin").classList.remove("open");
@@ -51,5 +46,6 @@ async function predict() {
     document.getElementById("paperBin").classList.add("open");
   }
 }
+
 
 
