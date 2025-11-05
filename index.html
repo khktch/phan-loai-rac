@@ -1,33 +1,49 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Phân loại rác thông minh</title>
-  <link rel="icon" href="data:,">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Phân loại rác bằng AI</title>
+
+  <!-- TensorFlow & Teachable Machine -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+
   <style>
+    body { font-family: Arial, sans-serif; padding: 12px; }
     .bins { display: flex; justify-content: space-around; margin-top: 20px; }
     .bin { width: 150px; text-align: center; }
-    .bin img { width: 100px; transition: 0.5s; }
-    .open { transform: rotateX(60deg); } /* hiệu ứng mở nắp */
+    .bin img { width: 100px; transform-origin: 50% 0%; transition: transform 0.15s linear; }
+
+    /* animation rung */
+    @keyframes trashShake {
+      0%   { transform: rotate(-6deg); }
+      25%  { transform: rotate(6deg); }
+      50%  { transform: rotate(-4deg); }
+      75%  { transform: rotate(4deg); }
+      100% { transform: rotate(-6deg); }
+    }
+    .open { animation: trashShake 0.22s linear infinite; }
+
+    #webcam-container { width: 200px; height: 200px; margin: 10px 0; }
+    #label-container div { margin: 4px 0; font-weight: bold; }
+    button { padding: 8px 12px; font-size: 14px; }
   </style>
 </head>
 <body>
   <h2>Demo phân loại rác bằng AI</h2>
-  <button onclick="init()">Bật Camera</button>
-  <div id="webcam-container"><video id="webcam" autoplay playsinline width="200" height="200"></video></div>
+  <button id="startBtn">Bật Camera</button>
+  <div id="status" style="margin-top:8px;color:#333;"></div>
 
-  <div class="bins">
-    <div class="bin"><img id="plasticBin" src="plastic.png"><p>Nhựa</p></div>
-    <div class="bin"><img id="metalBin" src="metal.png"><p>Kim loại</p></div>
-    <div class="bin"><img id="paperBin" src="paper.png"><p>Giấy</p></div>
-  </div>
-
+  <div id="webcam-container"></div>
   <div id="label-container"></div>
 
-  <!-- Gọi đến file script riêng -->
+  <div class="bins">
+    <div class="bin"><img id="plasticBin" src="plastic.png" alt="Nhựa"><p>Nhựa</p></div>
+    <div class="bin"><img id="metalBin" src="metal.png" alt="Kim loại"><p>Kim loại</p></div>
+    <div class="bin"><img id="paperBin" src="paper.png" alt="Giấy"><p>Giấy</p></div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
-
