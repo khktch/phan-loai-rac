@@ -32,3 +32,24 @@ async function predict() {
   }
 }
 
+async function predict() {
+  const prediction = await model.predict(webcam.canvas);
+
+  // reset trạng thái
+  document.getElementById("plasticBin").classList.remove("open");
+  document.getElementById("metalBin").classList.remove("open");
+  document.getElementById("paperBin").classList.remove("open");
+
+  // tìm lớp có xác suất cao nhất
+  let best = prediction.reduce((a, b) => a.probability > b.probability ? a : b);
+
+  if (best.className === "Nhựa") {
+    document.getElementById("plasticBin").classList.add("open");
+  } else if (best.className === "Kim loại") {
+    document.getElementById("metalBin").classList.add("open");
+  } else if (best.className === "Giấy") {
+    document.getElementById("paperBin").classList.add("open");
+  }
+}
+
+
