@@ -1,8 +1,8 @@
 let model, webcam, labelContainer, maxPredictions;
 
 async function init() {
-  const modelURL = "model.json";
-  const metadataURL = "metadata.json";
+  const modelURL = "https://khktch.github.io/phan-loai-rac/model.json";
+  const metadataURL = "https://khktch.github.io/phan-loai-rac/metadata.json";
 
   model = await tmImage.load(modelURL, metadataURL);
   const flip = true;
@@ -31,3 +31,4 @@ async function predict() {
       prediction[i].className + ": " + prediction[i].probability.toFixed(2);
   }
 }
+
