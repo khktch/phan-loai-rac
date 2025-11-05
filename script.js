@@ -1,11 +1,16 @@
 const URL = "https://khktch.github.io/phan-loai-rac/"; // model.json, metadata.json, weights.bin nằm cùng cấp
 let model, webcamStream;
-let currentFacingMode = "user"; // "user" là cam trước, "environment" là cam sau
-
+let currentFacingMode = "user"; // cam trước
 const video = document.getElementById("webcam");
 const statusText = document.getElementById("status");
 const labelContainer = document.getElementById("label-container");
-const trashBin = document.getElementById("trashBin");
+
+// 3 thùng rác
+const bins = {
+  Nhựa: document.getElementById("plasticBin"),
+  "Kim loại": document.getElementById("metalBin"),
+  "Giấy": document.getElementById("paperBin"),
+};
 
 async function init() {
   statusText.innerText = "⏳ Đang tải mô hình...";
@@ -21,13 +26,10 @@ async function init() {
 }
 
 async function setupCamera() {
-  if (webcamStream) {
-    webcamStream.getTracks().forEach(track => track.stop());
-  }
-
+  if (webcamStream) webcamStream.getTracks().forEach(track => track.stop());
   try {
     webcamStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: currentFacingMode }
+      video: { facingMode: currentFacingMode },
     });
     video.srcObject = webcamStream;
     await video.play();
@@ -49,17 +51,17 @@ async function predictLoop() {
       const prediction = await model.predict(video);
       displayPrediction(prediction);
     }
-    await new Promise(r => setTimeout(r, 200)); // dự đoán mỗi 0.2 giây
+    await new Promise(r => setTimeout(r, 200));
   }
 }
 
 function displayPrediction(prediction) {
   labelContainer.innerHTML = "";
 
-  let top = prediction[0];
-  for (let p of prediction) {
-    if (p.probability > top.probability) top = p;
-  }
+  // tìm nhãn có xác suất cao nhất
+  let top = prediction.reduce((max, p) =>
+    p.probability > max.probability ? p : max
+  );
 
   prediction.forEach(p => {
     const percent = Math.round(p.probability * 100);
@@ -68,13 +70,16 @@ function displayPrediction(prediction) {
     labelContainer.appendChild(div);
   });
 
-  // rung khi nhận đúng
-  if (top.probability > 0.8) {
-    trashBin.classList.add("shake");
-  } else {
-    trashBin.classList.remove("shake");
+  // xóa hiệu ứng cũ
+  Object.values(bins).forEach(bin => bin.classList.remove("shake"));
+
+  // nếu xác suất > 80%, thùng tương ứng rung
+  if (top.probability > 0.8 && bins[top.className]) {
+    bins[top.className].classList.add("shake");
   }
 }
+
+
 
 
 
