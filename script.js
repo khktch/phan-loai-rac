@@ -26,9 +26,10 @@ async function loop() {
 
 async function predict() {
   const prediction = await model.predict(webcam.canvas);
-  for (let i = 0; i < prediction.length; i++) {
-    labelContainer.childNodes[i].innerHTML =
-      prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+  for (let i = 0; i < maxPredictions; i++) {
+    const percent = Math.round(prediction[i].probability * 100) + "%";
+    const classPrediction = `${prediction[i].className}: ${percent}`;
+    labelContainer.childNodes[i].innerHTML = classPrediction;
   }
   // reset trạng thái
   document.getElementById("plasticBin").classList.remove("open");
@@ -46,6 +47,7 @@ async function predict() {
     document.getElementById("paperBin").classList.add("open");
   }
 }
+
 
 
 
