@@ -2,28 +2,26 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phân loại rác thông minh</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
-
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
       text-align: center;
-      background: #f2f8f2;
-      color: #333;
+      background-color: #f0f9f1;
     }
 
     h2 {
-      margin-top: 20px;
       color: #2e7d32;
+      margin-top: 10px;
     }
 
     video {
       border-radius: 10px;
       margin-top: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
     }
 
     button {
@@ -32,28 +30,28 @@
       border: none;
       border-radius: 5px;
       padding: 10px 16px;
-      margin: 10px;
+      margin: 8px;
       cursor: pointer;
+      font-weight: 600;
     }
 
     button:hover {
       background-color: #45a049;
     }
 
-    #status {
-      margin: 10px;
-      font-weight: bold;
-    }
-
-    #label-container div {
-      font-size: 18px;
-      font-weight: 600;
-      margin-top: 5px;
+    .bins {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 25px;
     }
 
     .bin {
-      width: 120px;
-      margin-top: 20px;
+      width: 130px;
+      text-align: center;
+    }
+
+    .bin img {
+      width: 100px;
       transition: transform 0.3s;
     }
 
@@ -68,20 +66,33 @@
       75% { transform: rotate(-3deg); }
       100% { transform: rotate(0deg); }
     }
+
+    #label-container div {
+      font-weight: 600;
+      margin-top: 5px;
+    }
   </style>
 </head>
-
 <body>
-  <h2>♻️ Phân loại rác thông minh</h2>
-
+  <h2>Phân loại rác bằng AI</h2>
   <button onclick="init()">📷 Bật Camera</button>
   <button onclick="switchCamera()">🔄 Chuyển Camera</button>
-
   <p id="status">Chưa khởi tạo</p>
-  <video id="webcam" autoplay playsinline width="300" height="225"></video>
 
+  <div><video id="webcam" autoplay playsinline width="250" height="200"></video></div>
   <div id="label-container"></div>
-  <img id="trashBin" src="trash.png" class="bin" alt="Thùng rác">
+
+  <div class="bins">
+    <div class="bin">
+      <img id="plasticBin" src="plastic.png"><p>Nhựa</p>
+    </div>
+    <div class="bin">
+      <img id="metalBin" src="metal.png"><p>Kim loại</p>
+    </div>
+    <div class="bin">
+      <img id="paperBin" src="paper.png"><p>Giấy</p>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
